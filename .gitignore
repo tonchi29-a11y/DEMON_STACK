@@ -1,0 +1,17 @@
+# Logs / runtime output
+logs/
+*.log
+
+# Reports / temp output
+reports/
+*.tmp
+
+# User-local ini / HUD positions
+*.ini
+
+# VS Code personal settings
+.vscode/
+.vscode/mcp.json
+
+# Archives
+*.zip
