@@ -3,16 +3,37 @@
 ## Class: DemonPredict
 
 ### Constructor
-`p := DemonPredict(config?)`
+`p := DemonPredict(cfg := 0)`
+
+- `cfg` (Map, optional): merged into defaults.
+
+Default config keys:
+- `RmbOverrides`: `true`
+- `T_ON`: `0.55`
+- `T_OFF`: `0.45`
+- `TAU_ON_MS`: `40.0`
+- `TAU_OFF_MS`: `75.0`
+- `CooldownMs`: `250`
+
+Normalization ranges:
+- `SpikeMin`: `1.5`, `SpikeMax`: `3.0`
+- `HvMin`: `1.0`, `HvMax`: `3.0`
+- `SpeedMin`: `0.10`, `SpeedMax`: `1.20`
+
+Weights:
+- `W_CTX`: `0.40`
+- `W_SPIKE`: `0.35`
+- `W_HV`: `0.10`
+- `W_SPEED`: `0.15`
 
 ### Update
-`result := p.Update(context, confidence, vel, avgSpeed, hvRatio, spike, rmbDown := false, dtMs := 4, nowMs := A_TickCount)`
+`res := p.Update(context, confidence, vel, avgSpeed, hvRatio, spike, rmbDown := false, dtMs := 4, nowMs := A_TickCount)`
 
 Returns Map:
 - `adsProb` (0..1)
-- `desired` ("ADS"|"HPR")
+- `desired` ("ADS" | "HPR")
 - `changed` (bool)
-- `reason` (string)
+- `reason` ("rmb" | "tau_on" | "tau_off" | "")
 - `onMs`, `offMs`
 - `cooldownLeftMs`
 
@@ -22,4 +43,4 @@ Returns Map:
 
 ### Optional callback
 - `p.OnDecisionChanged := MyFn`
-- `MyFn(p, desired, reason, adsProb)` (must be non-blocking)
+- `MyFn(p, desired, reason, adsProb)` must be non-blocking.
