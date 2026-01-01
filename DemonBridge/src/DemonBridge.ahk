@@ -7,31 +7,31 @@ class DemonBridge {
         if slots < 2
             throw Error("slots must be >= 2")
 
-        this.name := name
-        this.payloadSize := Integer(payloadSize)
-        this.slots := Integer(slots)
-        this.crcEnabled := !!crcEnabled
+        this._name := name
+        this._payloadSize := Integer(payloadSize)
+        this._slots := Integer(slots)
+        this._crcEnabled := !!crcEnabled
 
         ; "Elite" layout:
         ; - 64-byte header (one cache line)
         ; - slot content is 80 bytes: seq(8) + payload(64) + crc32(4) + pad(4)
         ; - slot stride is 128 bytes (pad to reduce false sharing)
-        this.headerSize := 64
-        this.slotContentSize := 8 + this.payloadSize + 8
-        this.slotStride := 128
-        if this.slotContentSize > this.slotStride
+        this._headerSize := 64
+        this._slotContentSize := 8 + this._payloadSize + 8
+        this._slotStride := 128
+        if this._slotContentSize > this._slotStride
             throw Error("slotContentSize must be <= slotStride")
 
-        this.mapSize := this.headerSize + (this.slots * this.slotStride)
+        this._mapSize := this._headerSize + (this._slots * this._slotStride)
 
         this._hMap := 0
         this._pView := 0
 
         ; Stats
-        this.writeCount := 0
-        this.readOk := 0
-        this.readRetries := 0
-        this.crcFails := 0
+        this._writeCount := 0
+        this._readOk := 0
+        this._readRetries := 0
+        this._crcFails := 0
 
         this._OpenOrCreate()
         this._InitIfNew()
@@ -49,25 +49,28 @@ class DemonBridge {
     }
 
     __Delete() {
-        try this.Close()
+        try {
+            this.Close()
+        } catch {
+        }
     }
 
     ; Writer: write a payload Buffer (must be exactly payloadSize bytes)
     Write(payloadBuf) {
         if !(payloadBuf is Buffer)
             throw TypeError("payloadBuf must be a Buffer")
-        if payloadBuf.Size != this.payloadSize
-            throw Error("payloadBuf.Size must be " this.payloadSize)
+        if payloadBuf.Size != this._payloadSize
+            throw Error("payloadBuf.Size must be " this._payloadSize)
 
         ; Choose next slot (single-writer assumption)
         hdr := this._ReadHeader()
         wc := hdr.writeCounter + 1
-        slot := Mod(wc, this.slots)
+        slot := Mod(wc - 1, this._slots)
 
-        slotOff := this.headerSize + (slot * this.slotStride)
+        slotOff := this._headerSize + (slot * this._slotStride)
         seqOff := slotOff
         payOff := slotOff + 8
-        crcOff := payOff + this.payloadSize
+        crcOff := payOff + this._payloadSize
 
         seq := NumGet(this._pView, seqOff, "UInt64")
 
@@ -75,9 +78,9 @@ class DemonBridge {
         NumPut("UInt64", seq + 1, this._pView, seqOff)
 
         ; copy payload
-        DllCall("kernel32.dll\RtlMoveMemory", "Ptr", this._pView + payOff, "Ptr", payloadBuf.Ptr, "UPtr", this.payloadSize)
+        DllCall("kernel32.dll\RtlMoveMemory", "Ptr", this._pView + payOff, "Ptr", payloadBuf.Ptr, "UPtr", this._payloadSize)
 
-        crc := this.crcEnabled ? DemonBridge.Crc32(payloadBuf) : 0
+        crc := this._crcEnabled ? DemonBridge.Crc32(payloadBuf) : 0
         NumPut("UInt", crc, this._pView, crcOff)
 
         ; memory barrier to reduce reorder surprises across cores
@@ -91,56 +94,57 @@ class DemonBridge {
         ; publish header (with header seqlock)
         this._WriteHeader(wc, slot)
 
-        this.writeCount += 1
+        this._writeCount += 1
         return true
     }
 
     ; Reader: reads latest payload into outBuf (must be payloadSize).
     ; Returns true if a consistent payload was read.
     ReadLatest(&outBuf, retries := 8) {
-        if !(outBuf is Buffer) || outBuf.Size != this.payloadSize
-            outBuf := Buffer(this.payloadSize, 0)
+        if !(outBuf is Buffer) || outBuf.Size != this._payloadSize
+            outBuf := Buffer(this._payloadSize, 0)
 
         loop retries {
             hdr := this._ReadHeader()
             slot := hdr.lastSlot
-            if slot < 0 || slot >= this.slots {
-                this.readRetries += 1
+            if slot < 0 || slot >= this._slots {
+                this._readRetries += 1
                 continue
             }
 
-            slotOff := this.headerSize + (slot * this.slotStride)
+            slotOff := this._headerSize + (slot * this._slotStride)
             seqOff := slotOff
             payOff := slotOff + 8
-            crcOff := payOff + this.payloadSize
+            crcOff := payOff + this._payloadSize
 
             seq1 := NumGet(this._pView, seqOff, "UInt64")
             if (seq1 & 1) {
                 ; odd = writer in progress
-                this.readRetries += 1
+                this._readRetries += 1
                 continue
             }
 
             ; copy payload out
-            DllCall("kernel32.dll\RtlMoveMemory", "Ptr", outBuf.Ptr, "Ptr", this._pView + payOff, "UPtr", this.payloadSize)
+            DllCall("kernel32.dll\RtlMoveMemory", "Ptr", outBuf.Ptr, "Ptr", this._pView + payOff, "UPtr", this._payloadSize)
             crcRead := NumGet(this._pView, crcOff, "UInt")
 
+            DemonBridge._ReadBarrier()
             seq2 := NumGet(this._pView, seqOff, "UInt64")
             if (seq1 != seq2) || (seq2 & 1) {
-                this.readRetries += 1
+                this._readRetries += 1
                 continue
             }
 
-            if this.crcEnabled {
+            if this._crcEnabled {
                 crcCalc := DemonBridge.Crc32(outBuf)
                 if (crcCalc != crcRead) {
-                    this.crcFails += 1
-                    this.readRetries += 1
+                    this._crcFails += 1
+                    this._readRetries += 1
                     continue
                 }
             }
 
-            this.readOk += 1
+            this._readOk += 1
             return true
         }
 
@@ -149,24 +153,29 @@ class DemonBridge {
 
     GetState() {
         return Map(
-            "name", this.name,
-            "payloadSize", this.payloadSize,
-            "slots", this.slots,
-            "writeCount", this.writeCount,
-            "readOk", this.readOk,
-            "readRetries", this.readRetries,
-            "crcFails", this.crcFails
+            "name", this._name,
+            "payloadSize", this._payloadSize,
+            "slots", this._slots,
+            "writeCount", this._writeCount,
+            "readOk", this._readOk,
+            "readRetries", this._readRetries,
+            "crcFails", this._crcFails
         )
     }
 
     ; ---------------- internals ----------------
+
+    static _ReadBarrier() {
+        static dummy := Buffer(4, 0)
+        DllCall("kernel32.dll\InterlockedExchangeAdd", "Ptr", dummy.Ptr, "Int", 0, "Int")
+    }
 
     _OpenOrCreate() {
         FILE_MAP_ALL_ACCESS := 0xF001F
         PAGE_READWRITE := 0x04
         INVALID_HANDLE_VALUE := -1
 
-        hMap := DllCall("kernel32.dll\OpenFileMappingW", "UInt", FILE_MAP_ALL_ACCESS, "Int", 0, "WStr", this.name, "Ptr")
+        hMap := DllCall("kernel32.dll\OpenFileMappingW", "UInt", FILE_MAP_ALL_ACCESS, "Int", 0, "WStr", this._name, "Ptr")
         if !hMap {
             hMap := DllCall(
             "kernel32.dll\CreateFileMappingW"
@@ -174,15 +183,15 @@ class DemonBridge {
                 , "Ptr", 0
                 , "UInt", PAGE_READWRITE
                 , "UInt", 0
-                , "UInt", this.mapSize
-                , "WStr", this.name
+                , "UInt", this._mapSize
+                , "WStr", this._name
                 , "Ptr"
             )
             if !hMap
                 throw Error("CreateFileMapping failed. LastError=" A_LastError)
         }
 
-        pView := DllCall("kernel32.dll\MapViewOfFile", "Ptr", hMap, "UInt", FILE_MAP_ALL_ACCESS, "UInt", 0, "UInt", 0, "UPtr", this.mapSize, "Ptr")
+        pView := DllCall("kernel32.dll\MapViewOfFile", "Ptr", hMap, "UInt", FILE_MAP_ALL_ACCESS, "UInt", 0, "UInt", 0, "UPtr", this._mapSize, "Ptr")
         if !pView {
             DllCall("kernel32.dll\CloseHandle", "Ptr", hMap, "Int")
             throw Error("MapViewOfFile failed. LastError=" A_LastError)
@@ -195,17 +204,17 @@ class DemonBridge {
     _InitIfNew() {
         ; If header payloadSize mismatches, initialize header.
         hdr := this._ReadHeader(false)
-        if (hdr.payloadSize != this.payloadSize) || (hdr.slots != this.slots) {
+        if (hdr.payloadSize != this._payloadSize) || (hdr.slots != this._slots) {
             ; zero memory
-            DllCall("kernel32.dll\RtlZeroMemory", "Ptr", this._pView, "UPtr", this.mapSize)
+            DllCall("kernel32.dll\RtlZeroMemory", "Ptr", this._pView, "UPtr", this._mapSize)
 
             ; header publish
             this._WriteHeader(0, 0, true)
 
             ; init slot seq to 0
-            loop this.slots {
+            loop this._slots {
                 slot := A_Index - 1
-                slotOff := this.headerSize + (slot * this.slotStride)
+                slotOff := this._headerSize + (slot * this._slotStride)
                 NumPut("UInt64", 0, this._pView, slotOff)
             }
             DllCall("kernel32.dll\FlushProcessWriteBuffers", "Int")
@@ -223,6 +232,7 @@ class DemonBridge {
             lastSlot := NumGet(base, 16, "UInt")
             psz := NumGet(base, 20, "UInt")
             slots := NumGet(base, 24, "UInt")
+            DemonBridge._ReadBarrier()
             hseq2 := NumGet(base, 0, "UInt64")
             if (hseq1 = hseq2) && (!(hseq2 & 1) || !strict) {
                 return {writeCounter: wc, lastSlot: lastSlot, payloadSize: psz, slots: slots}
@@ -239,8 +249,8 @@ class DemonBridge {
         NumPut("UInt64", hseq + 1, base, 0) ; odd
         NumPut("UInt64", writeCounter, base, 8)
         NumPut("UInt", lastSlot, base, 16)
-        NumPut("UInt", this.payloadSize, base, 20)
-        NumPut("UInt", this.slots, base, 24)
+        NumPut("UInt", this._payloadSize, base, 20)
+        NumPut("UInt", this._slots, base, 24)
         NumPut("UInt", 0, base, 28)
         DllCall("kernel32.dll\FlushProcessWriteBuffers", "Int")
         NumPut("UInt64", hseq + 2, base, 0) ; even
