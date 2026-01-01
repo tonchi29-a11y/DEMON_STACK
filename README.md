@@ -11,12 +11,25 @@ This repository contains reusable AutoHotkey v2 libraries extracted from DEMON, 
 - DemonWatchdog — stall detection + degraded mode signaling
 - DemonSPSC — SPSC ring buffer (dx,dy,t64)
 - DemonEMA — dt-based EMA smoothing
+- DemonContextDetect — motion context classifier (Idle/Long/Close + confidence)
 - DemonInput — dual lane input sampling (Timer + RawInput)
+- DemonPredict — ADS/HPR decision engine driven by context/features
+- DemonNeuromorphic — leaky integrate-and-fire spikes (boost/trigger helper)
+- DemonChaos — Lorenz-inspired chaos score + cooldown bias
+- DemonQuantumBuffer — probabilistic accumulator + collapse gate
 - DemonTimerRes — system timer resolution request (timeBeginPeriod/timeEndPeriod)
 - DemonAffinity — CPU affinity mask builder + process/thread pin helpers
 - DemonPerfInit — opt-in performance presets + best-effort restore token
 - DemonBridge — shared memory IPC (seqlock + CRC32, cache-aligned)
 - DemonPack64 — fixed 64-byte payload pack/unpack helpers
+- DemonFallback — policy wrapper for watchdog-driven fallbacks
+
+
+## Quick start
+Each library provides a selftest entrypoint. Examples:
+- DemonLog: `DemonLog/examples/demo_selftest.ahk`
+- DemonBatchTelemetry: `DemonBatchTelemetry/examples/demo_selftest.ahk`
+- DemonContextDetect: `DemonContextDetect/examples/demo_selftest.ahk`
 
 
 ## Gold stacks
