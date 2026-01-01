@@ -4,7 +4,19 @@
 Lightweight leaky integrate-and-fire spikes for decision/context boosts.
 
 ### Constructor
-`n := DemonNeuromorphic(config?)`
+`n := DemonNeuromorphic(cfg := 0)`
+
+- If `cfg` is a `Map`, it overrides defaults.
+
+Config keys (defaults):
+- `Count` (8)
+- `Decay` (0.995)
+- `LearningRate` (0.05)
+- `Threshold` (0.5)
+- `RefractoryMs` (12)
+- `BaseDtMs` (4)
+- `SpikeBoost` (0.20)
+- `MaxBoost` (0.50)
 
 ### Update
 `res := n.Update(intensitiesArray, dtMs := 4, nowMs := A_TickCount)`
