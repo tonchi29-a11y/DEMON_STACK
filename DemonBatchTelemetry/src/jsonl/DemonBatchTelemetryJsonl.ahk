@@ -69,7 +69,9 @@ class DemonBatchTelemetryJsonl {
             dy := this._dy[j]
             src := DemonBatchTelemetryJsonl._JsonEscape(this._src[j])
 
-            text .= Format('{{""tMs"":{1},""dx"":{2},""dy"":{3},""src"":""{4}""}}', t, dx, dy, src) . "`r`n"
+            ; JSONL: one JSON object per line.
+            ; Keep newline appended outside Format() to avoid parser traps.
+            text .= Format('{"tMs":{1},"dx":{2},"dy":{3},"src":"{4}"}', t, dx, dy, src) . "`r`n"
         }
 
         this._count := 0

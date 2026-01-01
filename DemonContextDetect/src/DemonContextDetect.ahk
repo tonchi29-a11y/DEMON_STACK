@@ -3,6 +3,7 @@
 class DemonContextDetect {
     __New(config := "") {
         this._cfg := DemonContextDetect._MergeCfg(DemonContextDetect._DefaultCfg(), config)
+        this.OnContextChanged := 0
         this.Reset()
     }
 

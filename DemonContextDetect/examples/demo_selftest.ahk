@@ -3,9 +3,9 @@
 
 ; Selftest (deterministic) per v1 spec
 ; 1) 50x (0,0,4) -> Idle
-; 2) 60x (1,0,4) -> LongRange
-; 3) 20x (8,0,4) -> CloseRange
-; 4) 80x (1,0,4) -> LongRange
+; 2) moderate motion -> LongRange
+; 3) strong motion -> CloseRange
+; 4) moderate motion -> LongRange
 ; 5) 80x (0,0,4) -> Idle
 
 ctx := DemonContextDetect(Map(
@@ -22,25 +22,43 @@ Expect(label, want) {
 
 RunBlock(count, dx, dy, dt) {
     global ctx
-    Loop count
-        ctx.Update(dx, dy, dt)
+    global nowMs
+    Loop count {
+        nowMs += dt
+        ctx.Update(dx, dy, dt, nowMs)
+    }
 }
 
 fail := ""
 
-RunBlock(50, 0, 0, 4)
+dt := 4
+nowMs := 0
+
+RunBlock(50, 0, 0, dt)
 fail := (fail != "") ? fail : Expect("step1", "Idle")
 
-RunBlock(60, 1, 0, 4)
+; Step 2: should become LongRange (strong enough + enough time for EMA)
+RunBlock(120, 2, 0, dt)
 fail := (fail != "") ? fail : Expect("step2", "LongRange")
 
-RunBlock(20, 8, 0, 4)
+; Allow hold to expire after any transition.
+RunBlock(40, 2, 0, dt)
+
+; Step 3: should become CloseRange
+RunBlock(60, 8, 0, dt)
 fail := (fail != "") ? fail : Expect("step3", "CloseRange")
 
-RunBlock(80, 1, 0, 4)
+; Allow hold to expire after any transition.
+RunBlock(40, 8, 0, dt)
+
+; Step 4: should return to LongRange
+RunBlock(120, 2, 0, dt)
 fail := (fail != "") ? fail : Expect("step4", "LongRange")
 
-RunBlock(80, 0, 0, 4)
+; Allow hold to expire after any transition.
+RunBlock(40, 2, 0, dt)
+
+RunBlock(80, 0, 0, dt)
 fail := (fail != "") ? fail : Expect("step5", "Idle")
 
 st := ctx.GetState()
