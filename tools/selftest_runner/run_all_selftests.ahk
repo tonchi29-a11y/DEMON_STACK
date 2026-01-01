@@ -5,7 +5,10 @@
 ; - Runs each via RunWait (MsgBoxes may require clicking OK)
 ; - Writes: DEMON_STACK\reports\selftest_report.md
 
-root := RTrim(A_ScriptDir "\..\..", "\/")
+root := A_ScriptDir
+SplitPath(root, , &root)  ; parent of tools/selftest_runner
+SplitPath(root, , &root)  ; parent of tools
+root := RTrim(root, "\\/")
 reportPath := root "\reports\selftest_report.md"
 ahkExe := A_AhkPath
 
@@ -21,9 +24,27 @@ FindSelftests(rootDir) {
     root := RTrim(rootDir, "\/")
     tests := []
 
+    skip := Map(
+        ".git", 1,
+        "reports", 1,
+        "stacks", 1,
+        "tools", 1
+    )
+
     ; One level deep: <root>\<Library>\examples\demo_selftest.ahk
-    Loop Files, root "\*\examples\demo_selftest.ahk", "F" {
-        tests.Push(A_LoopFileFullPath)
+    ; Enumerate candidate folders and probe the expected selftest path.
+    Loop Files, root "\*", "D" {
+        name := A_LoopFileName
+        if skip.Has(name)
+            continue
+
+        ; Treat it as a library folder if it has src\
+        if !DirExist(A_LoopFileFullPath "\src")
+            continue
+
+        p := A_LoopFileFullPath "\examples\demo_selftest.ahk"
+        if FileExist(p)
+            tests.Push(p)
     }
 
     ; Array.Sort() is not available in all AHK v2 builds.
