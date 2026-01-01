@@ -79,7 +79,7 @@ Writer publishes to one slot at a time:
 
 1) Choose next slot:
    - `writeCounter := writeCounter + 1`
-   - `slot := writeCounter % slots`
+   - `slot := (writeCounter - 1) % slots`
 
 2) Begin slot write (seqlock):
    - Read current `seq`
@@ -113,6 +113,7 @@ Reader fetches the latest completed slot:
 1) Read header (seqlock):
    - Read `hseq1` and ensure it is **even**
    - Read `writeCounter`, `lastSlot`, `payloadSize`, `slots`
+   - **Barrier**
    - Read `hseq2`
    - Accept header only if `hseq1 == hseq2` and `hseq2` is even
 
@@ -120,6 +121,7 @@ Reader fetches the latest completed slot:
    - Read `seq1` and ensure it is **even**
    - Copy `payloadSize` bytes from `payload` into a local buffer
    - Read `crcRead`
+   - **Barrier**
    - Read `seq2`
    - Accept only if:
      - `seq1 == seq2`
@@ -128,6 +130,9 @@ Reader fetches the latest completed slot:
 
 3) If any check fails:
    - Retry a small bounded number of times (e.g. 5–10)
+
+### Barriers
+DemonBridge uses an interlocked operation as a lightweight read barrier in the reader paths (header + slot) to reduce reordering surprises and to match the documented protocol steps.
 
 ---
 
