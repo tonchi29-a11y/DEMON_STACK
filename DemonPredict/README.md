@@ -1,30 +1,27 @@
 # DemonPredict (AHK v2)
 
-Pure profile decision engine (ADS vs HPR) driven by motion context and feature signals.
+Pure decision engine (ADS vs HPR) driven by motion context and feature signals (typically from DemonContextDetect). Uses Schmitt thresholds + TAU timers + cooldown to reduce flapping.
 
 ## Quick start
 - Run: `examples/demo_selftest.ahk`
 
 ## Usage
-Call `Update()` with context + features each tick. Pass explicit `dtMs`/`nowMs` for deterministic tests.
-
 ```ahk2
 #Requires AutoHotkey v2.0
 #Include ..\src\DemonPredict.ahk
 
-p := DemonPredict()
-res := p.Update(
-    "ADS",  ; context
-    0.9,    ; confidence
-    2.0,    ; vel
-    1.5,    ; avgSpeed
-    1.0,    ; hvRatio
-    false,  ; spike
-    false,  ; rmbDown
-    4,      ; dtMs
-    1000    ; nowMs
+pred := DemonPredict()
+
+; `ctx` is typically a DemonContextDetect instance.
+st := ctx.GetState()
+
+r := pred.Update(
+    st["context"], st["confidence"],
+    st["vel"], st["avgSpeed"], st["hvRatio"], st["spike"],
+    false, 8, A_TickCount
 )
-; res["desired"], res["adsProb"], res["changed"]
+
+; r["desired"] is "ADS" or "HPR"
 ```
 
 ## Examples
@@ -32,5 +29,8 @@ res := p.Update(
 - `examples/demo_live_context_input.ahk`
 
 ## Docs
-- `docs/api.md`
 - `docs/overview.md`
+- `docs/api.md`
+
+## License
+MIT (see `LICENSE`).
