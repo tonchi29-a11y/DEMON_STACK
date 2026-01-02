@@ -3,17 +3,17 @@
 
 hk := DemonHotkeys()
 
-id := hk.Add("^!+F24", (name) => 0)
+; Use an unlikely key to avoid conflicts.
+idx := hk.Add("^!+F24", (name) => 0)
 
 ok := true
 try {
     hk.Enable()
     hk.Disable()
-    ok := ok && hk.Remove(id)
+    ok := ok && hk.Remove(idx)
     hk.Clear()
 } catch {
     ok := false
 }
 
-; Selftest runner can treat exit code 0 as PASS.
 ExitApp(ok ? 0 : 1)

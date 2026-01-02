@@ -1,6 +1,6 @@
 # DemonHotkeys (AHK v2)
 
-Hotkey registration + enable/disable manager for small controller scripts.
+Hotkey registration + enable/disable manager for controller scripts.
 
 ## Quick start
 - Run: `examples/demo_selftest.ahk`
@@ -11,7 +11,7 @@ Hotkey registration + enable/disable manager for small controller scripts.
 #Include ..\src\DemonHotkeys.ahk
 
 hk := DemonHotkeys()
-id := hk.Add("^!q", (name) => ExitApp())
+idx := hk.Add("^!q", (name) => ExitApp())
 hk.Enable()
 ```
 

@@ -3,7 +3,7 @@
 DemonHotkeys is a small manager for registering and toggling groups of hotkeys.
 
 ## What it does
-- Adds hotkey bindings via `Hotkey()`.
+- Registers hotkeys via `Hotkey()`.
 - Enables/disables bindings cleanly.
 - Supports best-effort unregister via `Remove()` / `Clear()`.
 - Tracks simple counters (`fires`, `errors`) for diagnostics.
