@@ -14,7 +14,15 @@ IsAdmin() {
 pid := GetPid()
 adm := IsAdmin()
 
-; Tray Exit (može biti mrtav ako je admin/UIPI, zato imamo timer exit)
+; --- Emergency EXIT window (mouse kill, always works) ---
+exitGui := Gui("+AlwaysOnTop +ToolWindow -MinimizeBox -MaximizeBox", "DemonHotkeys Exit")
+exitGui.SetFont("s10", "Segoe UI")
+exitGui.AddText("", "pid=" pid " admin=" adm)
+btn := exitGui.AddButton("w160 h40", "EXIT NOW")
+btn.OnEvent("Click", (*) => ExitApp())
+exitGui.Show("NoActivate x20 y20")
+
+; Tray menu (može biti mrtav kad je admin=1, zato imamo GUI)
 A_TrayMenu.Delete()
 A_TrayMenu.Add("Exit", (*) => ExitApp())
 A_TrayMenu.Default := "Exit"
@@ -23,51 +31,29 @@ A_TrayMenu.ClickCount := 1
 hk := DemonHotkeys()
 showing := true
 last := "boot"
-ticks := 0
 
 ShowTip() {
-	global showing, last, pid, adm, ticks
+	global showing, last, pid, adm
 	if !showing {
 		ToolTip ""
 		return
 	}
-	ToolTip "DemonHotkeys live (PANIC SAFE)"
+	ToolTip "DemonHotkeys live"
 		. "`npid=" pid " admin=" adm
-		. "`nEsc/F12: quit (polled timer)"
 		. "`nCtrl+Alt+H show"
 		. "`nCtrl+Alt+C hide/show"
 		. "`nCtrl+Alt+Q quit"
-		. "`nticks=" ticks " last=" last
+		. "`n(last=" last ")"
 		. (adm ? "`nNOTE: admin=1 can break tray exit" : "")
 }
 
-; DemonHotkeys actions (nice-to-have)
 hk.Add("^!h", (*) => (showing := true, last := "^!h", ShowTip()))
 hk.Add("^!c", (*) => (showing := !showing, last := "^!c", ShowTip()))
 hk.Add("^!q", (*) => ExitApp())
 hk.Enable()
+ShowTip()
 
-; Timer proves the script is alive and gives us exit even if hotkeys are dead.
-SetTimer(Heartbeat, 250)
-Heartbeat(*) {
-	global ticks
-	ticks += 1
-	ShowTip()
-}
-
-; PANIC EXIT: poll physical key state (does NOT require hotkey hook)
-SetTimer(PollExit, 30)
-PollExit(*) {
-	; "P" = physical state
-	if GetKeyState("Esc", "P") || GetKeyState("F12", "P") {
-		ExitApp
-	}
-}
-
-; Absolute safety: never force Task Manager again
-SetTimer(AutoExit, -300000) ; 5 minutes
-AutoExit(*) => ExitApp
+; Safety: auto-exit after 5 minutes so nikad ne mora Task Manager
+SetTimer((*) => ExitApp(), -300000)
 
 OnExit((*) => hk.Disable())
-
-ShowTip()
