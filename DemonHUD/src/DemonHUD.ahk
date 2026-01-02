@@ -4,6 +4,7 @@ class DemonHUD {
     static _instances := Map()
     static _wmNcHitTestMsg := 0x84
     static _ncHooked := false
+    static _ncCb := 0
 
     __New(cfg := 0) {
         this._cfg := DemonHUD._DefaultCfg()
@@ -52,6 +53,7 @@ class DemonHUD {
             if (DemonHUD._instances.Count = 0) && DemonHUD._ncHooked {
                 OnMessage(DemonHUD._wmNcHitTestMsg, 0)
                 DemonHUD._ncHooked := false
+                DemonHUD._ncCb := 0
             }
         }
     }
@@ -179,7 +181,9 @@ class DemonHUD {
             hwnd := g.Hwnd
             DemonHUD._instances[hwnd] := this
             if !DemonHUD._ncHooked {
-                OnMessage(DemonHUD._wmNcHitTestMsg, DemonHUD._OnNcHitTest)
+                if !IsObject(DemonHUD._ncCb)
+                    DemonHUD._ncCb := ObjBindMethod(DemonHUD, "_OnNcHitTest")
+                OnMessage(DemonHUD._wmNcHitTestMsg, DemonHUD._ncCb)
                 DemonHUD._ncHooked := true
             }
         }
