@@ -23,6 +23,8 @@ This repository contains reusable AutoHotkey v2 libraries extracted from DEMON, 
 - DemonBridge — shared memory IPC (seqlock + CRC32, cache-aligned)
 - DemonPack64 — fixed 64-byte payload pack/unpack helpers
 - DemonFallback — policy wrapper for watchdog-driven fallbacks
+- DemonHUD — small overlay HUD for status text
+- DemonHotkeys — hotkey registration + enable/disable manager
 
 
 ## Quick start
