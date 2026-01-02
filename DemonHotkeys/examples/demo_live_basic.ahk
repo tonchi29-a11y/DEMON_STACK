@@ -10,18 +10,13 @@ A_TrayMenu.Add("Exit", (*) => ExitApp())
 A_TrayMenu.Default := "Exit"
 A_TrayMenu.ClickCount := 1
 
+GetPid() {
+    return DllCall("kernel32.dll\GetCurrentProcessId", "UInt")
+}
+
 hk := DemonHotkeys()
 showing := true
 last := "boot"
-
-GetPid() {
-	return DllCall("kernel32.dll\GetCurrentProcessId", "UInt")
-}
-
-IsAdmin() {
-	; simple admin check
-	return !!DllCall("shell32.dll\IsUserAnAdmin", "Int")
-}
 
 ShowTip() {
 	global showing, last
@@ -30,13 +25,12 @@ ShowTip() {
 		return
 	}
 	pid := GetPid()
-	adm := IsAdmin()
 	ToolTip "DemonHotkeys live"
-		. "`npid=" pid " admin=" adm
+		. "`npid=" pid
 		. "`nCtrl+Alt+H  show"
 		. "`nCtrl+Alt+C  hide/show"
 		. "`nCtrl+Alt+Q  quit"
-		. "`nEsc / F12   quit"
+		. "`nEsc / F12   quit (hard)"
 		. "`nlast=" last
 }
 
