@@ -51,7 +51,9 @@ class DemonHUD {
 
             ; Unhook message if last instance
             if (DemonHUD._instances.Count = 0) && DemonHUD._ncHooked {
-                OnMessage(DemonHUD._wmNcHitTestMsg, 0)
+                if IsObject(DemonHUD._ncCb) {
+                    OnMessage(DemonHUD._wmNcHitTestMsg, DemonHUD._ncCb, 0)
+                }
                 DemonHUD._ncHooked := false
                 DemonHUD._ncCb := 0
             }
