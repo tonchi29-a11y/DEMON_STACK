@@ -1,13 +1,12 @@
 #Requires AutoHotkey v2.0
+#SingleInstance Force
 #Include ..\src\DemonHotkeys.ahk
 
 hk := DemonHotkeys()
 
-; Use an unlikely key to avoid conflicts.
-idx := hk.Add("^!+F24", (name) => 0)
-
 ok := true
 try {
+    idx := hk.Add("^!h", (name) => 0)
     hk.Enable()
     hk.Disable()
     ok := ok && hk.Remove(idx)
@@ -16,4 +15,5 @@ try {
     ok := false
 }
 
+MsgBox(ok ? "PASS" : "FAIL", "DemonHotkeys selftest", "T1")
 ExitApp(ok ? 0 : 1)
