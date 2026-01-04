@@ -1,6 +1,9 @@
 #Requires AutoHotkey v2.0
 
 class DemonBridge {
+    static _barInited := false
+    static _barFn := ""
+
     __New(name := "Local\DemonBridge", payloadSize := 64, slots := 3, crcEnabled := true) {
         if payloadSize != 64
             throw Error("payloadSize must be 64 for DemonBridge v1")
@@ -167,7 +170,35 @@ class DemonBridge {
 
     static _ReadBarrier() {
         static dummy := Buffer(4, 0)
-        DllCall("kernel32.dll\InterlockedExchangeAdd", "Ptr", dummy.Ptr, "Int", 0, "Int")
+
+        if !DemonBridge._barInited {
+            DemonBridge._barInited := true
+            DemonBridge._barFn := DemonBridge._PickBarrierFn(dummy)
+        }
+
+        if (DemonBridge._barFn != "") {
+            DllCall(DemonBridge._barFn, "Ptr", dummy.Ptr, "Int", 0, "Int")
+            return
+        }
+
+        ; slow fallback but always available
+        DllCall("kernel32.dll\FlushProcessWriteBuffers")
+    }
+
+    static _PickBarrierFn(dummy) {
+        candidates := [
+            "KernelBase.dll\InterlockedExchangeAdd",
+            "kernel32.dll\InterlockedExchangeAdd",
+            "ntdll.dll\RtlInterlockedExchangeAdd"
+        ]
+        for _, fn in candidates {
+            try {
+                DllCall(fn, "Ptr", dummy.Ptr, "Int", 0, "Int")
+                return fn
+            } catch {
+            }
+        }
+        return ""
     }
 
     _OpenOrCreate() {
