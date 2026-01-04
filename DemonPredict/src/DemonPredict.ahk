@@ -138,8 +138,6 @@ class DemonPredict {
     }
 
     _ComputeAdsProb(ctx, conf, vel, avgSpeed, hvRatio, spike, rmbDown) {
-        clamp01 := DemonPredict._Clamp01
-
         if (this._cfg["RmbOverrides"] && rmbDown)
             return 1.0
 
@@ -152,22 +150,25 @@ class DemonPredict {
         else
             ctxScore := 0.0
 
-        ctxScore *= clamp01(conf)
+        ctxScore *= DemonPredict._Clamp01(conf)
 
         ; Spike contribution (vel/avg)
-        spikeMin := this._cfg["SpikeMin"] + 0.0
-        spikeMax := this._cfg["SpikeMax"] + 0.0
-        spikeScore := clamp01((spike - spikeMin) / Max(0.00001, (spikeMax - spikeMin)))
+        sMin := this._cfg["SpikeMin"] + 0.0
+        sMax := this._cfg["SpikeMax"] + 0.0
+        sNorm := (sMax - sMin) + 0.0
+        spikeScore := DemonPredict._Clamp01((spike - sMin) / ((sNorm = 0.0) ? 1.0 : sNorm))
 
         ; hvRatio contribution
-        hvMin := this._cfg["HvMin"] + 0.0
-        hvMax := this._cfg["HvMax"] + 0.0
-        hvScore := clamp01((hvRatio - hvMin) / Max(0.00001, (hvMax - hvMin)))
+        hMin := this._cfg["HvMin"] + 0.0
+        hMax := this._cfg["HvMax"] + 0.0
+        hNorm := (hMax - hMin) + 0.0
+        hvScore := DemonPredict._Clamp01((hvRatio - hMin) / ((hNorm = 0.0) ? 1.0 : hNorm))
 
         ; speed contribution (avgSpeed)
-        spMin := this._cfg["SpeedMin"] + 0.0
-        spMax := this._cfg["SpeedMax"] + 0.0
-        speedScore := clamp01((avgSpeed - spMin) / Max(0.00001, (spMax - spMin)))
+        vMin := this._cfg["SpeedMin"] + 0.0
+        vMax := this._cfg["SpeedMax"] + 0.0
+        vNorm := (vMax - vMin) + 0.0
+        speedScore := DemonPredict._Clamp01((avgSpeed - vMin) / ((vNorm = 0.0) ? 1.0 : vNorm))
 
         wCtx := this._cfg["W_CTX"] + 0.0
         wSpike := this._cfg["W_SPIKE"] + 0.0
@@ -175,7 +176,7 @@ class DemonPredict {
         wSpeed := this._cfg["W_SPEED"] + 0.0
 
         prob := (wCtx * ctxScore) + (wSpike * spikeScore) + (wHv * hvScore) + (wSpeed * speedScore)
-        return clamp01(prob)
+        return DemonPredict._Clamp01(prob)
     }
 
     ; ---------- defaults ----------
