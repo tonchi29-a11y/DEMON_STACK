@@ -165,9 +165,11 @@ out := Buffer(64, 0)
 if br.ReadLatest(&out) {
 	t := NumGet(out, 0, "UInt")
 }
+```
 
-Notes
+## Notes
 .github/copilot-instructions.md contains style/contract guidance for AI assistants; it does not affect runtime behavior.
 Prefer Local\... mapping names unless you explicitly need cross-session visibility.
-License
+
+## License
 MIT (see LICENSE in each library folder).
