@@ -2,6 +2,9 @@
 
 Telemetry pipeline demo with durable outputs.
 
+## Screenshot
+![GOLD_Telemetry_Batch](./gold_telemetry_batch.png)
+
 Pipeline:
 DemonInput → DemonSPSC → DemonEMA → DemonBatchTelemetry (CSV + JSONL)
 

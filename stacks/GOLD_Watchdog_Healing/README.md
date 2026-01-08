@@ -2,6 +2,9 @@
 
 Opinionated “recipe” showing how the base libraries combine:
 
+## Screenshot
+![GOLD_Watchdog_Healing](./gold_healing.png)
+
 - DemonTime (QPC timing)
 - DemonWatchdog (stall detection + degraded-mode signal)
 - DemonLog (persistent logging + SmartLog rate limiting)

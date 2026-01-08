@@ -2,6 +2,11 @@
 
 Demonstrates coordinating two processes using a shared ready flag.
 
+## Screenshots
+![GOLD_Bridge_ReadyFlag (receiver + sender)](./gold_receiver_sender.png)
+
+![GOLD_Bridge_ReadyFlag (receiver)](./gold_receiver.png)
+
 Uses:
 - DemonReadyFlag
 - DemonBridge

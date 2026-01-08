@@ -2,6 +2,9 @@
 
 Generic HUD + hotkey controller demo stack.
 
+## Screenshot
+![GOLD_HUD_Controls](./gold_hud_controls.png)
+
 Uses:
 - DemonHUD
 - DemonHotkeys

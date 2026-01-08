@@ -2,6 +2,9 @@
 
 Opinionated “recipe” showing how the base libraries combine:
 
+## Screenshot
+![GOLD_Bridge_SHM](./gold_Bridge_SHM.png)
+
 - Sender: Input → SPSC → EMA → Pack64 → Bridge.Write
   - `gold_sender.ahk`
 - Receiver: Bridge.Read → Unpack → ToolTip

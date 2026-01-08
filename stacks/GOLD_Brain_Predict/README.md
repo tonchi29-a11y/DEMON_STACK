@@ -2,6 +2,9 @@
 
 Shows a full “brain” pipeline with a HUD observer and hotkey toggles.
 
+## Screenshot
+![GOLD_Brain_Predict](./gold_brain_predict.png)
+
 Uses:
 - DemonInput, DemonSPSC
 - DemonContextDetect
