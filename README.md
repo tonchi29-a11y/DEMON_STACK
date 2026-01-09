@@ -152,6 +152,8 @@ Run:
 1. `stacks/GOLD_Bridge_SHM/gold_receiver.ahk`
 2. `stacks/GOLD_Bridge_SHM/gold_sender.ahk`
 
+![GOLD_Bridge_SHM](stacks/GOLD_Bridge_SHM/gold_Bridge_SHM.png)
+
 ---
 
 ### GOLD_Bridge_ReadyFlag
@@ -164,6 +166,8 @@ Run:
 
 1. `stacks/GOLD_Bridge_ReadyFlag/gold_receiver.ahk`
 2. `stacks/GOLD_Bridge_ReadyFlag/gold_sender.ahk`
+
+![GOLD_Bridge_ReadyFlag](stacks/GOLD_Bridge_ReadyFlag/gold_receiver_sender.png)
 
 ---
 
@@ -179,6 +183,8 @@ Run:
 
 - `stacks/GOLD_Watchdog_Healing/gold_healing.ahk`
 
+![GOLD_Watchdog_Healing](stacks/GOLD_Watchdog_Healing/gold_healing.png)
+
 ---
 
 ### GOLD_Input_DualLane
@@ -190,6 +196,10 @@ Demonstrates Timer lane ↔ RawInput lane switching.
 Run:
 
 - `stacks/GOLD_Input_DualLane/gold_input_duallane.ahk`
+
+![GOLD_Input_DualLane (Timer lane)](stacks/GOLD_Input_DualLane/gold_input_duallane_timer_lane.png)
+
+![GOLD_Input_DualLane (RawInput lane)](stacks/GOLD_Input_DualLane/gold_input_duallane_raw_input.png)
 
 ---
 
@@ -204,6 +214,8 @@ Demonstrates:
 Run:
 
 - `stacks/GOLD_HUD_Controls/gold_hud_controls.ahk`
+
+![GOLD_HUD_Controls](stacks/GOLD_HUD_Controls/gold_hud_controls.png)
 
 ---
 
@@ -220,6 +232,8 @@ Run:
 
 - `stacks/GOLD_Brain_Predict/gold_brain_predict.ahk`
 
+![GOLD_Brain_Predict](stacks/GOLD_Brain_Predict/gold_brain_predict.png)
+
 ---
 
 ### GOLD_Telemetry_Batch
@@ -234,6 +248,8 @@ Telemetry pipeline demo:
 Run:
 
 - `stacks/GOLD_Telemetry_Batch/gold_telemetry_batch.ahk`
+
+![GOLD_Telemetry_Batch](stacks/GOLD_Telemetry_Batch/gold_telemetry_batch.png)
 
 ---
 
