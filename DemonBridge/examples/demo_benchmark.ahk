@@ -36,7 +36,7 @@ main() {
   cfg := ParseArgs(args)
 
   if (mode = "sender") {
-    if cfg.spawnReceiver {
+    if cfg["spawnReceiver"] {
       SpawnReceiver(cfg)
       Sleep 200
     }
