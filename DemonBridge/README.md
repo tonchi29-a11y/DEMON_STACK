@@ -24,6 +24,22 @@ You should see the receiver ToolTip updating continuously.
 Run:
 - `examples/demo_selftest.ahk`
 
+## Benchmark
+Run (auto-spawns receiver, then runs sender):
+- `examples/demo_benchmark.ahk`
+
+Receiver-only:
+- `examples/demo_benchmark.ahk receiver`
+
+Sender-only:
+- `examples/demo_benchmark.ahk sender --no-spawn`
+
+Options:
+- `--name Local\DemonBridgeBench`
+- `--secs 5`
+- `--hz 0` (0 = max throughput)
+- `--crc 1` (1 = CRC enabled, 0 = disabled)
+
 ## Usage
 ```ahk2
 #Requires AutoHotkey v2.0
