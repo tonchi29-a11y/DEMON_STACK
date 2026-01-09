@@ -2,6 +2,9 @@
 
 Runs `examples/demo_selftest.ahk` across all libraries under `DEMON_STACK/` and writes a Markdown report.
 
+## Screenshot
+![Selftest runner](./run_all_selftests.png)
+
 ## Run
 - `tools/selftest_runner/run_all_selftests.ahk`
 
