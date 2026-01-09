@@ -673,7 +673,11 @@ The repo includes an interactive selftest runner:
 
 - `tools/selftest_runner/run_all_selftests.ahk`
 
+![Selftest runner script](tools/selftest_runner/overview_png/run_all_selftest_ahk.png)
+
 It discovers `<lib>/examples/demo_selftest.ahk` and writes a Markdown report under `reports/`.
+
+![Selftest report output](tools/selftest_runner/overview_png/all_selftest_output.png)
 
 - Some selftests are interactive (MsgBox) by design.
 - For CI-style automation, you can standardize selftests to `ExitApp(0/1)` with no UI.
