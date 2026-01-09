@@ -22,6 +22,9 @@
 ;
 ; Output is printed to stdout when launched from a terminal.
 
+global g_outText := ""
+global g_hasStdout := false
+
 main()
 
 main() {
@@ -167,6 +170,7 @@ RunSender(cfg) {
   Println("name=" name)
   Println("crc=" (crcEnabled ? "1" : "0") " secs=" secs " hz=" hz)
   Println("writes=" writes " rate=" Format("{:.1f}", rate) " /sec")
+  MaybeShowOutput("DemonBridge benchmark — sender")
 }
 
 RunReceiver(cfg) {
@@ -234,6 +238,8 @@ RunReceiver(cfg) {
     Println("latency_us: min=" Format("{:.1f}", minUs) " avg=" Format("{:.1f}", meanUs) " max=" Format("{:.1f}", maxUs))
   else
     Println("latency_us: (no samples)")
+
+  MaybeShowOutput("DemonBridge benchmark — receiver")
 }
 
 QpcFreq() {
@@ -276,8 +282,27 @@ SleepUntilQpc(targetQpc) {
 Println(s) {
   try {
     FileAppend(s "`r`n", "*")
+    global g_hasStdout := true
   } catch {
     ; fallback for non-console launches
+    global g_outText
+    g_outText .= s "`r`n"
     OutputDebug s
+  }
+}
+
+MaybeShowOutput(title) {
+  global g_hasStdout
+  global g_outText
+
+  if g_hasStdout
+    return
+
+  if (g_outText = "")
+    return
+
+  try {
+    MsgBox g_outText, title
+  } catch {
   }
 }
