@@ -58,6 +58,8 @@ You *probably don’t need it* for:
   Ready-to-run example pipelines that show how to combine multiple libraries:
   - e.g. dual-lane input → SPSC ring → EMA smoothing → lock-free IPC → telemetry
 
+  ![Gold stacks](stacks/gold_stack.png)
+
 ---
 
 ## Repo map
