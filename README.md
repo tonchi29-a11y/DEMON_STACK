@@ -52,7 +52,7 @@ You *probably don’t need it* for:
   - `docs/overview.md` (what it does, why it exists)
   - `docs/api.md` (how to call it)
 
-  ![Selftest runner](tools/selftest_runner/run_all_selftests.png)
+  ![Selftest runner](tools/selftest_runner/overview_png/run_all_selftests.png)
 
 - **Gold stacks (reference pipelines)**  
   Ready-to-run example pipelines that show how to combine multiple libraries:
